@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breezometer Pollen Forecast API</title>
+    <!-- Bootstrap CSS (integrated version) -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="mt-4 mb-4">Breezometer Pollen Forecast API</h1>
+
+        <form id="pollenForm" class="mb-4">
+            <div class="form-row">
+                <div class="col">
+                    <input type="text" class="form-control" id="latitudeInput" placeholder="Enter latitude">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="longitudeInput" placeholder="Enter longitude">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="featuresInput" placeholder="Enter features list">
+                </div>
+                <div class="col">
+                    <input type="number" class="form-control" id="daysInput" placeholder="Enter number of days">
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-primary" onclick="getPollenForecast()">Get Forecast</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="pollenInfo" class="row"></div>
+    </div>
+
+    <script>
+        function getPollenForecast() {
+            const latitudeInput = document.getElementById('latitudeInput').value;
+            const longitudeInput = document.getElementById('longitudeInput').value;
+            const featuresInput = document.getElementById('featuresInput').value;
+            const daysInput = document.getElementById('daysInput').value;
+
+            // Check if the inputs are not empty
+            if (latitudeInput.trim() === '' || longitudeInput.trim() === '' || featuresInput.trim() === '' || daysInput.trim() === '') {
+                alert('Please enter all required information.');
+                return;
+            }
+
+            // Replace 'YOUR_API_KEY' with your actual Breezometer API key
+            const apiKey = 'YOUR_API_KEY';
+
+            // Function to fetch data from the Breezometer Pollen Forecast API
+            const fetchData = () => {
+                return new Promise((resolve, reject) => {
+                    const apiUrl = `https://api.breezometer.com/pollen/v2/forecast/daily?lat=${latitudeInput}&lon=${longitudeInput}&key=${apiKey}&features=${featuresInput}&days=${daysInput}`;
+                    fetch(apiUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => resolve(data))
+                        .catch(error => reject(error));
+                });
+            };
+
+            // Function to create a card element for pollen forecast information
+            const createPollenCard = (pollenData) => {
+                const card = document.createElement('div');
+                card.classList.add('col-md-12', 'card');
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">Pollen Forecast for ${pollenData.location.city}, ${pollenData.location.country}</h5>
+                        <p class="card-text">Date: ${pollenData.data[0].datetime}</p>
+                        <p class="card-text">Pollen Types: ${pollenData.data[0].pollens.map(pollen => pollen.pollen_name).join(', ')}</p>
+                    </div>
+                `;
+
+                return card;
+            };
+
+            // Function to display pollen forecast information on the webpage
+            const displayPollenInfo = (pollenData) => {
+                const pollenInfoContainer = document.getElementById('pollenInfo');
+                pollenInfoContainer.innerHTML = ''; // Clear previous results
+
+                const card = createPollenCard(pollenData);
+                pollenInfoContainer.appendChild(card);
+            };
+
+            // Fetch pollen forecast information and display on the webpage
+            fetchData()
+                .then(data => displayPollenInfo(data))
+                .catch(error => console.error('Error fetching pollen information:', error));
+        }
+    </script>
+
+    <!-- Bootstrap JS (integrated version) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

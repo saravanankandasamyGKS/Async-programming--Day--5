@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary API - Word Information</title>
+    <!-- Bootstrap CSS (integrated version) -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="mt-4 mb-4">Dictionary API - Word Information</h1>
+
+        <form id="wordForm" class="mb-4">
+            <div class="form-row">
+                <div class="col">
+                    <input type="text" class="form-control" id="wordInput" placeholder="Enter a word">
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-primary" onclick="fetchWordInfo()">Get Information</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="wordInfo" class="row"></div>
+    </div>
+
+    <script>
+        function fetchWordInfo() {
+            const wordInput = document.getElementById('wordInput').value;
+
+            // Check if the input is not empty
+            if (wordInput.trim() === '') {
+                alert('Please enter a word.');
+                return;
+            }
+
+            // Function to fetch data from the Dictionary API
+            const fetchData = () => {
+                return new Promise((resolve, reject) => {
+                    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordInput}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => resolve(data))
+                        .catch(error => reject(error));
+                });
+            };
+
+            // Function to create a card element for word information
+            const createWordCard = (wordData) => {
+                const card = document.createElement('div');
+                card.classList.add('col-md-12', 'card');
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${wordData.word}</h5>
+                        <p class="card-text">Part of Speech: ${wordData.meanings[0].partOfSpeech}</p>
+                        <p class="card-text">Definition: ${wordData.meanings[0].definitions[0].definition}</p>
+                        <p class="card-text">Example: ${wordData.meanings[0].definitions[0].example}</p>
+                    </div>
+                `;
+
+                return card;
+            };
+
+            // Function to display word information on the webpage
+            const displayWordInfo = (wordData) => {
+                const wordInfoContainer = document.getElementById('wordInfo');
+                wordInfoContainer.innerHTML = ''; // Clear previous results
+
+                if (wordData.length > 0) {
+                    const card = createWordCard(wordData[0]);
+                    wordInfoContainer.appendChild(card);
+                } else {
+                    alert('Word not found. Please enter a valid word.');
+                }
+            };
+
+            // Fetch word information and display on the webpage
+            fetchData()
+                .then(data => displayWordInfo(data))
+                .catch(error => console.error('Error fetching word information:', error));
+        }
+    </script>
+
+    <!-- Bootstrap JS (integrated version) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
